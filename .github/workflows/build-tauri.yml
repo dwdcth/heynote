@@ -3,10 +3,10 @@ name: build-tauri
 on:
   push:
     branches: [tauri]
+    tags: ['v*']
   pull_request:
     branches: [tauri]
   workflow_dispatch:
-  tags: ['v*']
 
 env:
   # skip the Electron binary download; the Tauri build doesn't need it
