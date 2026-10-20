@@ -24,18 +24,12 @@ pub enum MenuAction {
     Quit,
 }
 
-// notify-debouncer-full returns a different cache backend per platform
-// (FSEvents on macOS needs the explicit FileIdMap; inotify carries its own
-// rename info and uses NoCache).
-#[cfg(target_os = "macos")]
-pub type FileDebouncer = notify_debouncer_full::Debouncer<
-    notify_debouncer_full::notify::FsEventWatcher,
-    notify_debouncer_full::FileIdMap,
->;
-#[cfg(not(target_os = "macos"))]
+// notify-debouncer-full's new_debouncer() returns Debouncer<RecommendedWatcher,
+// RecommendedCache> on every platform (the cache resolves to the right backend
+// internally) — keep the alias platform-independent.
 pub type FileDebouncer = notify_debouncer_full::Debouncer<
     notify_debouncer_full::notify::RecommendedWatcher,
-    notify_debouncer_full::NoCache,
+    notify_debouncer_full::RecommendedCache,
 >;
 
 pub struct AppState {
