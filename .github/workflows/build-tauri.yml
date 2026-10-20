@@ -58,7 +58,7 @@ jobs:
       - name: Install zig (official tarball)
         run: |
           curl -sL --retry 3 -o zig.tar.xz \
-            https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz
+            https://ziglang.org/download/0.17.0/zig-x86_64-linux-0.17.0.tar.xz
           mkdir -p "$HOME/.zig"
           tar -xf zig.tar.xz -C "$HOME/.zig" --strip-components=1
           "$HOME/.zig/zig" version
