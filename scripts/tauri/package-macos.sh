@@ -9,7 +9,9 @@ REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BIN="$REPO_ROOT/src-tauri/target/aarch64-apple-darwin/release/heynote-tauri"
 ICNS="$REPO_ROOT/src-tauri/icons/icon.icns"
 PLIST="$REPO_ROOT/scripts/tauri/mac-bundle/Info.plist"
-OUT_TGZ="$REPO_ROOT/../heynote-tauri-macos-arm64.tar.gz"
+# output path (default: one level above the repo, matching the original
+# local workflow); pass an argument to override, e.g. CI uses the repo root
+OUT_TGZ="${1:-$REPO_ROOT/../heynote-tauri-macos-arm64.tar.gz}"
 
 [ -f "$BIN" ] || { echo "binary not found: $BIN (run cargo zigbuild first)" >&2; exit 1; }
 [ -f "$ICNS" ] || { echo "icns not found: $ICNS" >&2; exit 1; }

@@ -78,7 +78,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET=11.0 \
           cargo zigbuild --target aarch64-apple-darwin --release
       - name: Assemble .app bundle
-        run: scripts/tauri/package-macos.sh
+        run: scripts/tauri/package-macos.sh heynote-tauri-macos-arm64.tar.gz
       - uses: actions/upload-artifact@v4
         with:
           name: heynote-tauri-macos-arm64
