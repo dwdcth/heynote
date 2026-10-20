@@ -1,0 +1,42 @@
+
+{"formatVersion":"2.0.0","name":"Scratch"}
+∞∞∞text;created=@@CREATED@@
+Welcome to Heynote! 👋
+
+⌘ + Enter           Add new block below the current block
+⌥ + Enter           Add new block before the current block
+⌘ + Shift + Enter   Add new block at the end of the buffer
+⌥ + Shift + Enter   Add new block at the start of the buffer
+⌘ + ⌥ + Enter       Split the current block at cursor position
+⌘ + L               Change block language
+⌘ + N               Create a new note buffer
+⌘ + S               Move the current block to another (or new) buffer
+⌘ + P               Open note selector
+⌘ + Shift + P       Open command palette
+⌘ + Down            Goto next block
+⌘ + Up              Goto previous block
+⌘ + A               Select all text in a note block. Press again to select the whole buffer
+⌘ + ⌥ + Up/Down     Add additional cursor above/below
+⌥ + Shift + F       Format block content (works for JSON, JavaScript, HTML, CSS and Markdown)
+∞∞∞markdown;created=@@CREATED@@
+Read full documentation at https://heynote.com/docs
+∞∞∞math;created=@@CREATED@@
+This is a Math block. Here, rows are evaluated as math expressions. 
+
+radius = 5
+area = radius^2 * PI
+sqrt(9)
+
+It also supports some basic unit conversions, including currencies:
+
+13 inches in cm
+time = 3900 seconds to minutes
+time * 2
+
+1 EUR in USD
+∞∞∞markdown;created=@@CREATED@@
+In Markdown blocks, lists with [x] and [ ] are rendered as checkboxes:
+
+- [x] Download Heynote
+- [ ] Try out Heynote
+∞∞∞text-a;created=@@CREATED@@

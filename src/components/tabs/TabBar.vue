@@ -9,11 +9,13 @@
 
     import TabItem from './TabItem.vue'
     import MainMenuButton from './MainMenuButton.vue'
+    import WindowControls from './WindowControls.vue'
 
     export default {
         components: {
             TabItem,
             MainMenuButton,
+            WindowControls,
             draggable,
         },
 
@@ -79,6 +81,33 @@
                 this.heynoteStore.openBufferSelector()
             },
 
+            // Switch tabs on mousedown: WKWebView's click synthesis after a
+            // mousedown/mouseup pair is unreliable (drag-session bookkeeping
+            // in the native layer can cancel it), so we don't wait for it.
+            // No preventDefault here — Sortable needs the default mousedown
+            // to run its delayed-drag detection (hold 150ms / move 10px).
+            onTabMouseDown(path, event) {
+                if (event.target.closest(".close")) {
+                    return
+                }
+                this.heynoteStore.openBuffer(path)
+            },
+
+            // Window dragging is handled in JS: Tauri's injected drag-region
+            // handler intercepts the mousedown pipeline (preventDefault +
+            // stopImmediatePropagation), which disturbed tab interactions;
+            // this way only genuinely empty bar areas start a window drag.
+            onBarMouseDown(event) {
+                if (event.target.closest(".tab-item, button, .scroller, .window-controls, .close")) {
+                    return
+                }
+                if (window.heynote.platform.isTauri) {
+                    import("@tauri-apps/api/window").then((m) => {
+                        m.getCurrentWindow().startDragging()
+                    }).catch(() => {})
+                }
+            },
+
             dragEnd(event) {
                 //console.log("drag end:", event)
                 this.heynoteStore.focusEditor()
@@ -90,16 +119,20 @@
 </script>
 
 <template>
-    <nav :class="className" :style="style">
+    <nav :class="className" :style="style" @mousedown="onBarMouseDown">
         <MainMenuButton v-if="!showLeftPanel" />
         <template v-if="showTabs">
             <div class="scroller" tabindex="-1">
-                <draggable 
-                    :list="tabs" 
+                <draggable
+                    :list="tabs"
                     tag="ol"
-                    group="tabs" 
+                    group="tabs"
                     ghost-class="ghost"
-                    @end="dragEnd" 
+                    :delay="150"
+                    :delay-on-touch-only="false"
+                    :fallback-tolerance="10"
+                    :distance="10"
+                    @end="dragEnd"
                     item-key="path"
                 >
                     <template #item="{element, index}">
@@ -107,7 +140,7 @@
                             :path="element.path"
                             :title="element.title"
                             :active="element.active"
-                            @click.prevent="heynoteStore.openBuffer(element.path)"
+                            @mousedown.left="onTabMouseDown(element.path, $event)"
                             @mouseup="heynoteStore.focusEditor"
                         />
                     </template>
@@ -117,30 +150,36 @@
                 </draggable>
             </div>
             <div class="button-container">
-                <button 
+                <button
                     @click="openBufferSelector"
                     class="add-tab"
                     tabindex="-1"
                 ></button>
             </div>
         </template>
-        <div 
+        <div
             v-else
             class="title"
+            @mousedown="onBarMouseDown"
         >
             {{ currentBufferName }}
         </div>
+        <WindowControls />
     </nav>
 </template>
 
 <style lang="sass" scoped>
     .tab-bar
-        app-region: drag
         display: flex
         height: var(--tab-bar-height)
         padding: 0
         border-bottom: 1px solid var(--tab-bar-border-bottom-color)
-        
+        // WKWebView starts a native text-drag (and cancels the click) when a
+        // press on tab title text moves even a pixel — disable selection so
+        // tab clicks always register.
+        user-select: none
+        -webkit-user-select: none
+
         +platform-windows-linux
             padding-right: 140px
         +platform-windows-linux-fullscreen
@@ -167,7 +206,6 @@
             //width: 100%
             overflow-x: auto
             scrollbar-width: none
-            app-region: none
             +dark-mode
                 // needed to make the tabs visually aligned with the editor, since the editor's border-left
                 // (when the left panel is enabled) is much more discreet in dark mode, and looks more like
@@ -182,7 +220,6 @@
                     flex-shrink: 0
                     width: 7px
         .button-container
-            app-region: drag
             border-left: 1px solid #e6e6e6
             padding-top: 4px
             padding-left: 8px
@@ -192,7 +229,6 @@
             +dark-mode
                 border-left: 1px solid #242424
             .add-tab
-                app-region: none
                 width: 20px
                 height: 20px
                 border: none

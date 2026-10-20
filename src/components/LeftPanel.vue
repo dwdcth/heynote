@@ -78,6 +78,19 @@
         },
 
         methods: {
+            // JS window dragging (same rationale as TabBar): only empty
+            // areas of the top bar start a drag, buttons excluded.
+            onTopBarMouseDown(event) {
+                if (event.target.closest("button")) {
+                    return
+                }
+                if (window.heynote.platform.isTauri) {
+                    import("@tauri-apps/api/window").then((m) => {
+                        m.getCurrentWindow().startDragging()
+                    }).catch(() => {})
+                }
+            },
+
             onResizerMouseDown(event) {
                 if (event.button !== 0) {
                     return
@@ -122,7 +135,7 @@
 
 <template>
     <aside class="left-panel" :style="style">
-        <div class="top-bar">
+        <div class="top-bar" @mousedown="onTopBarMouseDown">
             <MainMenuButton />
         </div>
         <div class="left-panel-content">
@@ -163,7 +176,6 @@
         .top-bar
             height: var(--tab-bar-height)
             flex-shrink: 0
-            app-region: drag
             display: flex
 
         .left-panel-content
@@ -172,7 +184,6 @@
             //border-right: 1px solid var(--tab-bar-border-bottom-color)
 
         .left-panel-tab-buttons
-            app-region: none
             padding: 0px
             display: flex
             align-items: center

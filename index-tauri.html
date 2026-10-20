@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark">
+    <title>heynote</title>
+    <style>
+      /* Loading spinner shown until the Tauri bridge is initialized and the app has mounted.
+         Mirrors the overlay that the Electron preload injects. */
+      .app-loading-wrap {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        z-index: 9;
+      }
+      @media (prefers-color-scheme: dark) {
+        .app-loading-wrap {
+          background: #262B37;
+        }
+        .loaders-css__square-spin > div {
+          background: #fff;
+        }
+      }
+      .loaders-css__square-spin {
+        width: 30px;
+        height: 30px;
+      }
+      .loaders-css__square-spin > div {
+        width: 100%;
+        height: 100%;
+        background: #333;
+        animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+      }
+      @keyframes square-spin {
+        25% { transform: rotateX(180deg) rotateY(0); }
+        50% { transform: rotateX(180deg) rotateY(180deg); }
+        75% { transform: rotateX(0) rotateY(180deg); }
+        100% { transform: rotateX(0) rotateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div class="app-loading-wrap" id="app-loading"><div class="loaders-css__square-spin"><div></div></div></div>
+
+    <script type="module" src="/src/tauri/bootstrap.js"></script>
+    <script src="./math.js"></script>
+  </body>
+</html>

@@ -32,7 +32,6 @@
         flex-shrink: 0
         text-align: center
         button
-            app-region: none
             border: none
             padding: 0
             margin: 0

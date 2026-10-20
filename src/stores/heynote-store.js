@@ -270,6 +270,7 @@ export const useHeynoteStore = defineStore("heynote", {
             this.showCommandPalette = true
         },
         openMoveToBufferSelector() {
+            console.log("[dbg] openMoveToBufferSelector called, currentEditor=", !!this.currentEditor)
             this.closeDialog()
             this.showMoveToBufferSelector = true
         },

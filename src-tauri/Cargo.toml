@@ -1,0 +1,48 @@
+[package]
+name = "heynote-tauri"
+version = "2.9.1"
+description = "A dedicated scratch pad"
+authors = ["you"]
+license = "Commons Clause MIT"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# rlib only: desktop app (cdylib/staticlib are for mobile targets, and the
+# cdylib link step trips up zig's darwin linker)
+name = "heynote_tauri_lib"
+crate-type = ["rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# custom-protocol: embeds the frontend assets into the binary. The tauri CLI
+# enables it automatically for `tauri dev`/`tauri build`; plain
+# `cargo build` / `cargo zigbuild` needs it declared here or the release
+# binary serves an empty asset store (blank window).
+tauri = { version = "2", features = ["tray-icon", "unstable", "custom-protocol"] }
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-autostart = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+notify-debouncer-full = "0.4"
+walkdir = "2"
+fancy-regex = "0.14"
+ureq = { version = "2", features = ["json"] }
+dirs = "6"
+chrono = "0.4"
+mime_guess = "2"
+sys-locale = "0.3"
+rand = "0.8"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

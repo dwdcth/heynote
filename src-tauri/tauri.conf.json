@@ -1,0 +1,29 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Heynote",
+  "version": "2.9.1",
+  "identifier": "com.heynote.app",
+  "build": {
+    "devUrl": "http://localhost:3345",
+    "frontendDist": "../dist-tauri",
+    "beforeDevCommand": "npm run tauri:vite-dev",
+    "beforeBuildCommand": "npm run tauri:vite-build"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "appimage"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

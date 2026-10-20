@@ -55,6 +55,7 @@
             })
 
             window.heynote.mainProcess.on(MOVE_BLOCK_EVENT, (path) => {
+                console.log("[dbg] MOVE_BLOCK_EVENT received, dialogVisible=", this.dialogVisible)
                 this.openMoveToBufferSelector()
             })
 
@@ -193,9 +194,37 @@
 
             focusEditor() {
                 // we need to wait for the next tick for the cases when we set the inert attribute on the editor
-                // in which case issuing a focus() call immediately would not work 
+                // in which case issuing a focus() call immediately would not work
                 this.$nextTick(() => {
                     this.$refs.editor?.focus()
+                    // On WKWebView/WebKitGTK a JS focus() can be silently
+                    // dropped (e.g. focus landed on a dialog input and the
+                    // webview's keyboard routing got stuck); request a native
+                    // webview-level focus right away as well.
+                    if (window.heynote.platform.isTauri) {
+                        import("@tauri-apps/api/core").then((m) => m.invoke("focus_webview"))
+                            .then(() => this.$refs.editor?.focus())
+                            .catch(() => {})
+                    }
+                    let attempts = 0
+                    const retry = () => {
+                        attempts++
+                        const editorEl = this.$refs.editor?.$el?.querySelector?.(".cm-content")
+                        if (editorEl && (document.activeElement === editorEl || editorEl.contains(document.activeElement))) {
+                            return
+                        }
+                        if (attempts > 4) {
+                            if (window.heynote.platform.isTauri) {
+                                import("@tauri-apps/api/core").then((m) => m.invoke("focus_webview"))
+                                    .then(() => this.$refs.editor?.focus())
+                                    .catch(() => {})
+                            }
+                            return
+                        }
+                        this.$refs.editor?.focus()
+                        setTimeout(retry, 100)
+                    }
+                    setTimeout(retry, 50)
                 })
             },
 
@@ -213,6 +242,12 @@
                 }
 
                 const editor = toRaw(this.heynoteStore.currentEditor)
+                if (event.metaKey || event.ctrlKey) {
+                    console.log("[dbg] globalKeydown", event.key,
+                        "editor=", !!editor, "view=", !!editor?.view,
+                        "active=", document.activeElement?.tagName,
+                        "showMoveDialog=", this.heynoteStore.showMoveToBufferSelector)
+                }
                 if (!editor?.view) {
                     return
                 }
