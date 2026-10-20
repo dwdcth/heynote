@@ -1,0 +1,118 @@
+name: build-tauri
+
+on:
+  push:
+    branches: [tauri]
+  pull_request:
+    branches: [tauri]
+  workflow_dispatch:
+  tags: ['v*']
+
+env:
+  # skip the Electron binary download; the Tauri build doesn't need it
+  ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: lts/* }
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - name: Build frontend
+        run: npm ci && npm run tauri:vite-build
+      - name: Build binary
+        working-directory: src-tauri
+        run: cargo build --release
+      - name: Package
+        run: |
+          cd src-tauri/target/release
+          tar -czf ../../../heynote-tauri-linux-x64.tar.gz heynote-tauri
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heynote-tauri-linux-x64
+          path: heynote-tauri-linux-x64.tar.gz
+
+  macos-arm64:
+    # cross-compiled from Linux with cargo-zigbuild + the MacOSX11.3 SDK
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: lts/* }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: aarch64-apple-darwin }
+      - name: Install system deps (patchelf for zigbuild)
+        run: sudo apt-get update && sudo apt-get install -y patchelf
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - name: Install cargo-zigbuild
+        run: cargo install cargo-zigbuild --locked
+      - uses: mlugg/setup-zig@v1
+        with: { version: '0.14.1' }
+      - name: Fetch MacOSX SDK
+        run: |
+          mkdir -p ~/.cache/MacOSX-SDKs
+          curl -sL --retry 3 -o sdk.tar.xz \
+            https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+          tar -xf sdk.tar.xz -C ~/.cache/MacOSX-SDKs
+      - name: Build frontend
+        run: npm ci && npm run tauri:vite-build
+      - name: Cross-compile
+        working-directory: src-tauri
+        run: |
+          SDKROOT=$HOME/.cache/MacOSX-SDKs/MacOSX11.3.sdk \
+          MACOSX_DEPLOYMENT_TARGET=11.0 \
+          cargo zigbuild --target aarch64-apple-darwin --release
+      - name: Assemble .app bundle
+        run: scripts/tauri/package-macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heynote-tauri-macos-arm64
+          path: heynote-tauri-macos-arm64.tar.gz
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: lts/* }
+      - uses: dtolnay/rust-toolchain@stable
+        with: { targets: x86_64-pc-windows-msvc }
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: src-tauri }
+      - name: Build frontend
+        run: npm ci && npm run tauri:vite-build
+      - name: Build binary
+        working-directory: src-tauri
+        run: cargo build --release
+      - name: Package
+        shell: pwsh
+        run: |
+          Compress-Archive -Path src-tauri/target/release/heynote-tauri.exe -DestinationPath heynote-tauri-windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: heynote-tauri-windows-x64
+          path: heynote-tauri-windows-x64.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, macos-arm64, windows]
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            heynote-tauri-linux-x64.tar.gz
+            heynote-tauri-macos-arm64.tar.gz
+            heynote-tauri-windows-x64.zip
