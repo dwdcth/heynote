@@ -12,6 +12,12 @@ PLIST="$REPO_ROOT/scripts/tauri/mac-bundle/Info.plist"
 # output path (default: one level above the repo, matching the original
 # local workflow); pass an argument to override, e.g. CI uses the repo root
 OUT_TGZ="${1:-$REPO_ROOT/../heynote-tauri-macos-arm64.tar.gz}"
+# resolve to an absolute path: the tarball is created from inside a temp dir,
+# a relative OUT_TGZ would land there and be deleted by the cleanup below
+case "$OUT_TGZ" in
+  /*) ;;
+  *) OUT_TGZ="$PWD/$OUT_TGZ" ;;
+esac
 
 [ -f "$BIN" ] || { echo "binary not found: $BIN (run cargo zigbuild first)" >&2; exit 1; }
 [ -f "$ICNS" ] || { echo "icns not found: $ICNS" >&2; exit 1; }
