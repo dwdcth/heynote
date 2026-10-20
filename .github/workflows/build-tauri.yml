@@ -58,9 +58,10 @@ jobs:
       - name: Install zig (official tarball)
         run: |
           curl -sL --retry 3 -o zig.tar.xz \
-            https://ziglang.org/download/0.14.1/zig-linux-x86_64-0.14.1.tar.xz
+            https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz
           mkdir -p "$HOME/.zig/bin"
           tar -xf zig.tar.xz -C "$HOME/.zig" --strip-components=1
+          "$HOME/.zig/bin/zig" version
           echo "$HOME/.zig/bin" >> "$GITHUB_PATH"
       - name: Fetch MacOSX SDK
         run: |
