@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: lts/* }
+        with: { node-version: 'lts/*' }
       - uses: dtolnay/rust-toolchain@stable
       - name: Install system deps
         run: |
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: lts/* }
+        with: { node-version: 'lts/*' }
       - uses: dtolnay/rust-toolchain@stable
         with: { targets: aarch64-apple-darwin }
       - name: Install system deps (patchelf for zigbuild)
@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: lts/* }
+        with: { node-version: 'lts/*' }
       - uses: dtolnay/rust-toolchain@stable
         with: { targets: x86_64-pc-windows-msvc }
       - uses: Swatinem/rust-cache@v2
